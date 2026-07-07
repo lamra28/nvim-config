@@ -5,7 +5,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -155,6 +155,7 @@ require("lazy").setup({
 
 	-- "gc" to comment visual regions/lines
 	{ "numToStr/Comment.nvim", opts = {} },
+	{ "jeetsukumaran/vim-indentwise" },
 
 	{
 		"windwp/nvim-autopairs",
@@ -579,6 +580,18 @@ require("lazy").setup({
 							},
 							-- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
 							-- diagnostics = { disable = { 'missing-fields' } },
+						},
+					},
+				},
+				pylsp = {
+					settings = {
+						pylsp = {
+							plugins = {
+								pycodestyle = {
+									ignore = { "E501", "W503" },
+									maxLineLength = 100,
+								},
+							},
 						},
 					},
 				},
