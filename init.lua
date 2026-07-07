@@ -6,7 +6,6 @@ vim.g.maplocalleader = " "
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
-
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -14,6 +13,7 @@ vim.g.have_nerd_font = false
 
 -- Make line numbers default
 vim.opt.number = true
+
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
@@ -58,8 +58,8 @@ vim.opt.shiftwidth = 4
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
---vim.opt.list = true
---vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.list = true
+vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
@@ -156,6 +156,14 @@ require("lazy").setup({
 	-- "gc" to comment visual regions/lines
 	{ "numToStr/Comment.nvim", opts = {} },
 
+	{
+		"windwp/nvim-autopairs",
+		event = "InsertEnter",
+		config = function()
+			require("nvim-autopairs").setup({})
+		end,
+	},
+
 	-- Here is a more advanced example where we pass configuration
 	-- options to `gitsigns.nvim`. This is equivalent to the following Lua:
 	--    require('gitsigns').setup({ ... })
@@ -196,7 +204,7 @@ require("lazy").setup({
 			require("which-key").setup()
 
 			-- Document existing key chains
-			require("which-key").register({
+			require("which-key").add({
 				["<leader>c"] = { name = "[C]ode", _ = "which_key_ignore" },
 				["<leader>d"] = { name = "[D]ocument", _ = "which_key_ignore" },
 				["<leader>r"] = { name = "[R]ename", _ = "which_key_ignore" },
@@ -206,7 +214,7 @@ require("lazy").setup({
 				["<leader>h"] = { name = "Git [H]unk", _ = "which_key_ignore" },
 			})
 			-- visual mode
-			require("which-key").register({
+			require("which-key").add({
 				["<leader>h"] = { "Git [H]unk" },
 			}, { mode = "v" })
 		end,
@@ -219,6 +227,26 @@ require("lazy").setup({
 		build = function()
 			vim.fn["mkdp#util#install"]()
 		end,
+	},
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		cmd = "Neotree",
+		keys = {
+			{
+				"<leader>fe",
+				function()
+					require("neo-tree.command").execute({ toggle = true, dir = vim.uv.cwd() })
+				end,
+				desc = "Explorer Neotree (cwd)",
+			},
+		},
+		branch = "v3.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"MunifTanjim/nui.nvim",
+			"nvim-tree/nvim-web-devicons", -- optional, but recommended
+		},
+		lazy = false, -- neo-tree will lazily load itself
 	},
 
 	-- NOTE: Plugins can specify dependencies.
@@ -344,10 +372,31 @@ require("lazy").setup({
 			-- Useful status updates for LSP.
 			-- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
 			{ "j-hui/fidget.nvim", opts = {} },
+			{
+				"folke/lazydev.nvim",
+				ft = "lua", -- only load on lua files
+				opts = {
+					library = {
+						-- See the configuration section for more details
+						-- Load luvit types when the `vim.uv` word is found
+						{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
+					},
+				},
+			},
+			{ -- optional cmp completion source for require statements and module annotations
+				"hrsh7th/nvim-cmp",
+				opts = function(_, opts)
+					opts.sources = opts.sources or {}
+					table.insert(opts.sources, {
+						name = "lazydev",
+						group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+					})
+				end,
+			},
 
 			-- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
 			-- used for completion, annotations and signatures of Neovim apis
-			{ "folke/neodev.nvim", opts = {} },
+			-- { "folke/neodev.nvim", opts = {} },
 		},
 		config = function()
 			-- Brief aside: **What is LSP?**
@@ -494,6 +543,18 @@ require("lazy").setup({
 			--  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
 			--  - settings (table): Override the default settings passed when initializing the server.
 			--        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+			--
+			--
+			-- local lspconfig = require("lspconfig")
+			--
+			-- -- Add SourceKit-LSP explicitly:
+			-- lspconfig.sourcekit.setup({
+			-- 	cmd = { "sourcekit-lsp" },
+			-- 	filetypes = { "swift" },
+			-- 	root_dir = lspconfig.util.root_pattern("Package.swift", ".git", "."),
+			-- 	capabilities = require("cmp_nvim_lsp").default_capabilities(),
+			-- })
+			--
 			local servers = {
 				-- clangd = {},
 				-- gopls = {},
@@ -711,7 +772,7 @@ require("lazy").setup({
 			-- Load the colorscheme here.
 			-- Like many other themes, this one has different styles, and you could load
 			-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-			vim.cmd.colorscheme("slate")
+			vim.cmd.colorscheme("tokyonight")
 
 			-- You can configure highlights by doing something like:
 			vim.cmd.hi("Comment gui=none")
